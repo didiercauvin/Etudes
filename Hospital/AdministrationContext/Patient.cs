@@ -1,10 +1,10 @@
-﻿using System;
+﻿using BuildingBlocks;
+using System;
 
 namespace AdministrationContext
 {
-    public class Patient
+    public class Patient : AggregateRoot
     {
-        public Guid Id { get; set; }
         public string Name { get; }
         public string FirstName { get; }
         public DateTime Birthdate { get; }
@@ -29,6 +29,8 @@ namespace AdministrationContext
             Adresse2 = adresse2;
             PostalCode = postalCode;
             City = city;
+
+            ApplyChange(new PatientRegistered(Id));
         }
 
         public static Patient Create(
@@ -41,6 +43,16 @@ namespace AdministrationContext
             string city)
         {
             return new Patient(name, firstName, birthdate, adresse1, adresse2, postalCode, city);
+        }
+
+        protected override void RegisterAppliers()
+        {
+            RegisterApplier<PatientRegistered>(this.Apply);
+        }
+
+        private void Apply(PatientRegistered patient)
+        {
+            
         }
     }
 }

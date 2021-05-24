@@ -1,8 +1,10 @@
 ﻿using AdministrationContext;
 using BuildingBlocks;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ConsoleApp
@@ -15,10 +17,9 @@ namespace ConsoleApp
             var builder = new HostBuilder()
                .ConfigureServices((hostContext, services) =>
                {
-
                    services
+                   .AddMediatR(typeof(RegisterPatientRequest.Handler).Assembly)
                    .AddTransient<MyApplication>()
-                   .AddScoped<ICommandHandler<RegisterPatientCommand>, RegisterPatientCommand.Handler>()
                    .AddDbContext<AdministrationDbContext>();
                }).UseConsoleLifetime();
 
@@ -48,18 +49,17 @@ namespace ConsoleApp
 
     public class MyApplication
     {
-        private readonly ICommandHandler<RegisterPatientCommand> _registerPatientCommandHandler;
+        private readonly IMediator _mediator;
 
-        public MyApplication(
-            ICommandHandler<RegisterPatientCommand> registerPatientCommandHandler)
+        public MyApplication(IMediator mediator)
         {
-            this._registerPatientCommandHandler = registerPatientCommandHandler;
+            _mediator = mediator;
         }
 
         internal async Task Run()
         {
             Console.WriteLine("Hello World!");
-            var input = new RegisterPatientCommand()
+            var input = new RegisterPatientRequest()
             {
                 FirstName = "Didier",
                 Name = "Cauvin",
@@ -69,7 +69,7 @@ namespace ConsoleApp
                 City = "Pelissanne"
             };
 
-            _registerPatientCommandHandler.Handle(input);
+            await _mediator.Send(input);
         }
     }
 }

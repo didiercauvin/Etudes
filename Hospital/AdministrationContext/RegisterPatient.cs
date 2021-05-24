@@ -1,9 +1,12 @@
 ﻿using BuildingBlocks;
+using MediatR;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AdministrationContext
 {
-    public class RegisterPatientCommand : ICommand
+    public class RegisterPatientRequest : IRequest
     {
         public string Name { get; set; }
         public string FirstName { get; set; }
@@ -13,7 +16,7 @@ namespace AdministrationContext
         public string PostalCode { get; set; }
         public string City { get; set; }
 
-        public class Handler : ICommandHandler<RegisterPatientCommand>
+        public class Handler : IRequestHandler<RegisterPatientRequest>
         {
             private readonly AdministrationDbContext _context;
 
@@ -21,19 +24,22 @@ namespace AdministrationContext
             {
                 this._context = context;
             }
-            public void Handle(RegisterPatientCommand command)
+
+            public Task<Unit> Handle(RegisterPatientRequest request, CancellationToken cancellationToken)
             {
                 var patient = Patient.Create(
-                    command.Name,
-                    command.FirstName,
-                    command.Birthdate,
-                    command.Adresse1,
-                    command.Adresse2,
-                    command.PostalCode,
-                    command.City);
+                    request.Name,
+                    request.FirstName,
+                    request.Birthdate,
+                    request.Adresse1,
+                    request.Adresse2,
+                    request.PostalCode,
+                    request.City);
 
                 _context.Add(patient);
                 _context.SaveChanges();
+
+                return Task.FromResult(Unit.Value);
             }
         }
     }
